@@ -64,6 +64,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
      */
     private final String testName;
     private transient String safeName;
+    private final String tracerId;
     private final boolean skipped;
     private final String skippedMessage;
     private final String errorStackTrace;
@@ -120,6 +121,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
 
         className = testClassName;
         testName = nameAttr;
+        tracerId = testCase.attributeValue("tracerId");
         errorStackTrace = getError(testCase);
         errorDetails = getErrorMessage(testCase);
         this.parent = parent;
@@ -203,6 +205,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
         this.className = parent == null ? "unnamed" : parent.getName();
         this.testName = testName;
+        this.tracerId = null;
         this.errorStackTrace = errorStackTrace;
         this.errorDetails = "";
         this.parent = parent;
@@ -269,6 +272,14 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     @Exported(visibility=999)
     public @Override String getName() {
         return testName;
+    }
+
+    /**
+     * Gets the tracerId of the test
+     */
+    @Exported(visibility=9)
+    public String getTracerId() {
+        return tracerId;
     }
 
     /**
