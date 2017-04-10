@@ -182,8 +182,8 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         return head + "\n...[truncated " + middle + " bytes]...\n" + tail;
     }
 
-    private static final int HALF_MAX_SIZE = 500;
-    private static final int HALF_MAX_FAILING_SIZE = 50000;
+    private static final int HALF_MAX_SIZE = 200;
+    private static final int HALF_MAX_FAILING_SIZE = 2000;
     private static int halfMaxSize(Collection<CaseResult> results) {
         for (CaseResult result : results) {
             if (result.errorStackTrace != null) {
@@ -215,7 +215,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         this.skipped = false;
         this.skippedMessage = null;
     }
-    
+
     public ClassResult getParent() {
     	return classResult;
     }
@@ -345,12 +345,12 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         if(idx<0)       return "(root)";
         else            return className.substring(0,idx);
     }
-    
+
     @Override
     public String getFullName() {
     	return className+'.'+getName();
     }
-    
+
     /**
      * @since 1.515
      */
@@ -389,12 +389,12 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
                 this.failedSince = getRun().getNumber();
             } else {
                 LOGGER.warning("trouble calculating getFailedSince. We've got prev, but no owner.");
-                // failedSince will be 0, which isn't correct. 
+                // failedSince will be 0, which isn't correct.
             }
         }
         return failedSince;
     }
-    
+
     public Run<?,?> getFailedSinceRun() {
     	return getRun().getParent().getBuildByNumber(getFailedSince());
     }
@@ -413,7 +413,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
             return getRun().getNumber()-getFailedSince()+1;
         } else {
             LOGGER.fine("Trying to get age of a CaseResult without an owner");
-            return 0; 
+            return 0;
     }
     }
 
@@ -434,7 +434,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public String getStdout() {
         if(stdout!=null)    return stdout;
         SuiteResult sr = getSuiteResult();
-        if (sr==null) return "";         
+        if (sr==null) return "";
         return getSuiteResult().getStdout();
     }
 
@@ -459,7 +459,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         if(pr==null)    return null;
         return pr.getCase(getName());
     }
-    
+
     /**
      * Case results have no children
      * @return null
@@ -542,7 +542,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public boolean isSkipped() {
         return skipped;
     }
-    
+
     /**
      * @return true if the test was not skipped and did not pass, false otherwise.
      * @since 1.520
@@ -564,7 +564,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public SuiteResult getSuiteResult() {
         return parent;
     }
-    
+
     @Override
     public Run<?,?> getRun() {
         SuiteResult sr = getSuiteResult();
@@ -638,7 +638,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     /*package*/ void setClass(ClassResult classResult) {
         this.classResult = classResult;
     }
-    
+
     void replaceParent(SuiteResult parent) {
         this.parent = parent;
     }
