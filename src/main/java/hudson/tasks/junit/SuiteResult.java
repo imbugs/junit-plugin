@@ -25,6 +25,7 @@ package hudson.tasks.junit;
 
 import hudson.tasks.test.TestObject;
 import hudson.util.io.ParserConfigurator;
+import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -32,9 +33,14 @@ import org.dom4j.io.SAXReader;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -119,6 +125,34 @@ public final class SuiteResult implements Serializable {
     static List<SuiteResult> parse(File xmlReport, boolean keepLongStdio) throws DocumentException,
                                                                          IOException,
                                                                          InterruptedException {
+        try {
+            return doParse(xmlReport, keepLongStdio);
+        } catch (DocumentException e) {
+            trimUTF8(xmlReport);
+            return doParse(xmlReport, keepLongStdio);
+        }
+    }
+
+    public static void trimUTF8(File xmlReport) throws IOException {
+        File tempFile = File.createTempFile(xmlReport.getName() + ".", ".xml",
+            xmlReport.getParentFile());
+        FileWriter fw = new FileWriter(tempFile);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+            xmlReport), "UTF-8"));
+        for (String line; (line = reader.readLine()) != null;) {
+            String normalized = Normalizer.normalize(line, Normalizer.Form.NFD);
+            fw.write(normalized);
+            fw.write('\n');
+        }
+        fw.close();
+        FileUtils.deleteQuietly(xmlReport);
+        FileUtils.moveFile(tempFile, xmlReport);
+    }
+
+    static List<SuiteResult> doParse(File xmlReport, boolean keepLongStdio)
+                                                                           throws DocumentException,
+                                                                           IOException,
+                                                                           InterruptedException {
         List<SuiteResult> r = new ArrayList<SuiteResult>();
 
         // parse into DOM

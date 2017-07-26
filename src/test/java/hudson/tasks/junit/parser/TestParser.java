@@ -1,11 +1,19 @@
 package hudson.tasks.junit.parser;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Scanner;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -28,11 +36,48 @@ public class TestParser {
         }
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException,
-                                          DocumentException {
-        String xmlReportPath = "/opt/projects/github/junit-plugin/testXml/TEST-com.alipay.zdal.test.common.AllTestSuit.xml";
+    public static void trimUTF8(File xmlReport) throws IOException {
+        File tempFile = File.createTempFile(xmlReport.getName() + ".normal.", ".xml",
+            xmlReport.getParentFile());
+        FileWriter fw = new FileWriter(tempFile);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+            xmlReport), "UTF-8"));
+        for (String line; (line = reader.readLine()) != null;) {
+            String normalized = Normalizer.normalize(line, Normalizer.Form.NFD);
+            fw.write(normalized);
+            fw.write('\n');
+        }
+        fw.close();
+        FileUtils.deleteQuietly(xmlReport);
+        FileUtils.moveFile(tempFile, xmlReport);
+    }
+
+    public static void main(String[] args) throws DocumentException, InterruptedException,
+                                          IOException {
+        String xmlReportPath = "/home/tinghe/tinghe-source/aclinkelib/extern/surecool/testcase1/badxml/sub2/junitreports/TEST-com.alipay.vouchercore.servicetest.voucher.voucherqueryfacade.QueryWithSubAggregateVoucherInfoByIdsNormalTest.xml";
         //xmlReportPath = ""/tmp/TEST-com.alipay.zdal.test.common.AllTestSuit.xml"";
         File xmlReport = new File(xmlReportPath);
+        retryParse(xmlReport, true);
+    }
+
+    static List<SuiteResult> retryParse(File xmlReport, boolean keepLongStdio)
+                                                                              throws DocumentException,
+                                                                              IOException,
+                                                                              InterruptedException {
+        try {
+            return parse(xmlReport, true);
+        } catch (DocumentException e) {
+            System.out.println("========== TRIM UTF8 ");
+            e.printStackTrace();
+            trimUTF8(xmlReport);
+            return parse(xmlReport, true);
+        }
+    }
+
+    static List<SuiteResult> parse(File xmlReport, boolean keepLongStdio) throws DocumentException,
+                                                                         IOException,
+                                                                         InterruptedException {
+
         SAXReader saxReader = new SAXReader();
         ParserConfigurator.applyConfiguration(saxReader, new SuiteResultParserConfigurationContext(
             xmlReport));
@@ -48,6 +93,7 @@ public class TestParser {
         xmlWriter.write(root);
         fos.close();
         parseSuite(xmlReport, false, null, root);
+        return null;
     }
 
     private static void parseSuite(File xmlReport, boolean keepLongStdio, List<SuiteResult> r,

@@ -8,10 +8,10 @@ import org.dom4j.ElementPath;
  * Created by tinghe on 17-4-11.
  */
 public class TrimStdioUtil {
-    public static final int      HALF_BEGIN_SIZE = 2500;
-    public static final int      HALF_END_SIZE   = 5000;
-    public static final int      HALF_TOTAL_SIZE = HALF_BEGIN_SIZE + HALF_END_SIZE;
-    public static ElementHandler elementHandler;
+    public static final int       HALF_BEGIN_SIZE = 2500;
+    public static final int       HALF_END_SIZE   = 5000;
+    public static final int       HALF_TOTAL_SIZE = HALF_BEGIN_SIZE + HALF_END_SIZE;
+    private static ElementHandler elementHandler;
 
     public static String possiblyTrimStdio(String stdio) { // HUDSON-6516
         if (stdio == null) {
